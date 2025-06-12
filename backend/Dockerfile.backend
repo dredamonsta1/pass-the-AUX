@@ -1,0 +1,19 @@
+# backend/Dockerfile.backend
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package.json and package-lock.json first to leverage Docker cache
+# This layer will only be rebuilt if package*.json changes
+COPY backend/package*.json ./
+
+RUN npm install
+
+# Copy the rest of your backend application code
+COPY backend/. .
+
+# Expose the port your backend API runs on
+EXPOSE 3010 # Ensure this matches the PORT in your index.js
+
+# Command to start your Node.js backend
+CMD ["node", "index.js"]
