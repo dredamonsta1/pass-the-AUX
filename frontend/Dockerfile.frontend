@@ -10,6 +10,9 @@ COPY frontend/package*.json ./
 
 RUN npm install
 
+# Install TypeScript globally in this build stage to ensure 'tsc' command is found
+RUN npm install -g typescript
+
 # Copy the rest of your frontend application code
 COPY frontend/. .
 
