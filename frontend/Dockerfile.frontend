@@ -1,0 +1,30 @@
+# frontend/Dockerfile.frontend
+# Stage 1: Build the React application
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+# Copy package.json and package-lock.json first to leverage Docker cache
+# This layer will only be rebuilt if package*.json changes
+COPY frontend/package*.json ./
+
+RUN npm install
+
+# Copy the rest of your frontend application code
+COPY frontend/. .
+
+# Build the React app for production
+RUN npm run build
+
+# Stage 2: Serve the built React application with a lightweight web server (e.g., Nginx)
+FROM nginx:alpine
+
+# Copy the built React app from the build stage into Nginx's static file directory
+# This path needs to be correct for your React build output
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose the port Nginx will listen on
+EXPOSE 80
+
+# Command to start Nginx in the foreground
+CMD ["nginx", "-g", "daemon off;"]
