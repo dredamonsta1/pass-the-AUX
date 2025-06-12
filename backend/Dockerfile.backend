@@ -13,7 +13,8 @@ RUN npm install
 COPY backend/. .
 
 # Expose the port your backend API runs on
-EXPOSE 3010 # Ensure this matches the PORT in your index.js
+# Ensure this matches the PORT in your index.js
+EXPOSE 3010
 
 # Command to start your Node.js backend
 CMD ["node", "index.js"]
