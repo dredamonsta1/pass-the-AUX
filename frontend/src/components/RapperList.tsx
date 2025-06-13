@@ -342,7 +342,7 @@ const ClickableList = ({
   const dispatch = useAppDispatch();
 
   // Base URL for API calls. Consider storing this in a .env file for dynamic environments.
-  const API_BASE_URL = "https://ninebyfourapi.herokuapp.com";
+  const API_BASE_URL = "http://localhost:3010/uploads/{filename}";
 
   useEffect(() => {
     // Fetch artists when the component mounts or dependencies change.
