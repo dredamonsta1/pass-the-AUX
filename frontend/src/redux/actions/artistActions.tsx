@@ -194,7 +194,7 @@ export const fetchArtists = (): ArtistThunk => async (
   try {
     // Explicitly type the expected response structure from your backend
     // Assuming backend returns { artists: Artist[] }
-    const response = await axiosInstance.get<{ artists: Artist[] }>("/api");
+    const response = await axiosInstance.get<{ artists: Artist[] }>("/");
 
     // Ensure data.artists is an array. Your backend's index.js now returns { artists: [...] }
     const artists: Artist[] = Array.isArray(response.data.artists)
@@ -224,7 +224,7 @@ export const incrementClout = (artistId: number): ArtistThunk => async ( // Chan
   try {
     // Make API call to backend to increment clout
     // Assuming backend returns a success message or confirmation
-    const response = await axiosInstance.put(`/api/artists/${artistId}/clout`); // Updated endpoint for consistency
+    const response = await axiosInstance.put(`/artists/${artistId}/clout`); // Updated endpoint for consistency
     // Dispatch success action
     dispatch({ type: INCREMENT_CLOUT_SUCCESS, payload: { artistId } });
   } catch (error: unknown) { // Use unknown for catch errors, then narrow down

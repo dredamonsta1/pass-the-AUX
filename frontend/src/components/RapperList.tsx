@@ -377,7 +377,7 @@ const ClickableList = ({
       // Reverted the DELETE endpoint to match the backend's expectation (/api?artist_id=...).
       // If your backend's DELETE endpoint changes to /api/artists/:id, update this line:
       // const response = await axiosInstance.delete(`/api/artists/${artistId}`);
-      const response = await axiosInstance.delete(`/api`, { params: { artist_id: artistId } });
+      const response = await axiosInstance.delete(`/`, { params: { artist_id: artistId } });
       alert(response.data.message); // Replace with custom UI
       dispatch(fetchArtists()); // Refresh the artist list after successful deletion
     } catch (err: any) { // Consider refining this 'any' type with AxiosError checking
