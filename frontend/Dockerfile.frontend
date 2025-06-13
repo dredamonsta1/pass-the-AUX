@@ -9,7 +9,7 @@ ENV NODE_ENV=development
 
 # Copy package.json and package-lock.json first to leverage Docker cache
 # This layer will only be rebuilt if package*.json changes
-COPY package*.json ./  # This copies from the build context (which is your frontend folder)
+COPY package*.json ./
 
 RUN npm install
 
