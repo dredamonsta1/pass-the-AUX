@@ -8,14 +8,14 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 # Copy package.json and package-lock.json first to leverage Docker cache
-# This layer will only be rebuilt if package*.json changes
-COPY package*.json ./
+# IMPORTANT: Adjust path here. 'frontend/' is relative to the docker-compose.yml context.
+COPY frontend/package*.json ./
 
 RUN npm install
 
-# Copy the rest of your frontend application code from the build context.
-# Ensure all source files and tsconfig.json are in the root of your frontend folder.
-COPY . .
+# Copy the rest of your frontend application code from the frontend/ directory.
+# IMPORTANT: Adjust path here. 'frontend/' is relative to the docker-compose.yml context.
+COPY frontend/. .
 
 # Build the React app for production
 # This command must successfully create the build output directory (usually 'dist' for Vite) at /app/dist
