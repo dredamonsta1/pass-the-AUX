@@ -4,12 +4,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy package.json and package-lock.json first to leverage Docker cache
-# This layer will only be rebuilt if package*.json changes
+# IMPORTANT: Adjust path here. 'backend/' is relative to the docker-compose.yml context.
 COPY backend/package*.json ./
 
 RUN npm install
 
-# Copy the rest of your backend application code
+# Copy the rest of your backend application code from the backend/ directory.
+# IMPORTANT: Adjust path here. 'backend/' is relative to the docker-compose.yml context.
 COPY backend/. .
 
 # Expose the port your backend API runs on
@@ -17,4 +18,5 @@ COPY backend/. .
 EXPOSE 3010
 
 # Command to start your Node.js backend
+# The index.js file is now correctly located at /app/index.js
 CMD ["node", "index.js"]
