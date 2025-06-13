@@ -157,15 +157,156 @@
 
 // export default UserProfile;
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import axiosInstance from "../../utils/axiosInstance";
-import RapperList from "../RapperList"; // Uncomment if you use it
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom"; // Import useNavigate
+// import axiosInstance from "../../utils/axiosInstance";
+// import RapperList from "../RapperList"; // Uncomment if you use it
 
-const UserProfile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// const UserProfile = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   const navigate = useNavigate(); // Initialize useNavigate hook
+
+//   useEffect(() => {
+//     const fetchUserProfile = async () => {
+//       const token = localStorage.getItem("token");
+//       console.log("UserProfile: Token from localStorage:", token);
+
+//       if (!token) {
+//         setError("You are not logged in. Please log in to view your profile.");
+//         console.log("UserProfile: No token found in localStorage.");
+//         setLoading(false);
+//         return;
+//       }
+//       try {
+//         const response = await axiosInstance.get("/users/profile");
+
+//         setUser(response.data.user);
+//         setLoading(false);
+//       } catch (err) {
+//         console.error(
+//           "Error fetching user profile:",
+//           err.response?.data || err.message
+//         );
+//         if (
+//           err.response &&
+//           (err.response.status === 401 || err.response.status === 403)
+//         ) {
+//           setError(
+//             "Your session has expired or is invalid. Please log in again."
+//           );
+//           localStorage.removeItem("token");
+//           // Optionally redirect to login page here if you want an immediate redirect:
+//           // navigate('/login');
+//         } else {
+//           setError(err.response?.data?.message || "Failed to fetch user data.");
+//         }
+//         setLoading(false);
+//       }
+//     };
+//     fetchUserProfile();
+//   }, []);
+
+//   if (loading) {
+//     return <p>Loading user profile...</p>;
+//   }
+
+//   if (error) {
+//     return (
+//       <div style={{ color: "red" }}>
+//         <p>Error: {error}</p>
+//         <button
+//           onClick={() => navigate("/")}
+//           style={{ marginTop: "10px", padding: "8px 15px", cursor: "pointer" }}
+//         >
+//           Go to Home
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   if (!user) {
+//     return (
+//       <div>
+//         <p>No user data found. Please ensure you are logged in.</p>
+//         <button
+//           onClick={() => navigate("/")}
+//           style={{ marginTop: "10px", padding: "8px 15px", cursor: "pointer" }}
+//         >
+//           Go to Home
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   // Rendering for a SINGLE user object
+//   return (
+//     <div>
+//       <h3>Your Profile</h3>
+//       <div>
+//         <p>
+//           <strong>Username:</strong> {user.username}
+//         </p>
+//         <p>
+//           <strong>Email:</strong> {user.email}
+//         </p>
+//         <p>
+//           <strong>Role:</strong> {user.role}
+//         </p>
+//       </div>
+
+//       {/* The new button */}
+//       <button
+//         onClick={() => navigate("/")} // Use navigate('/') to go to the home route
+//         style={{
+//           marginTop: "20px", // Add some space above the button
+//           padding: "10px 20px",
+//           backgroundColor: "#007bff", // Example styling
+//           color: "white",
+//           border: "none",
+//           borderRadius: "5px",
+//           cursor: "pointer",
+//           fontSize: "16px",
+//         }}
+//       >
+//         Go to Home
+//       </button>
+
+//       <RapperList />
+//     </div>
+//   );
+// };
+
+// export default UserProfile;
+
+
+
+//********************New Code****************** 
+
+
+import React, { useState, useEffect, FC } from "react"; // Import FC for Function Component typing
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import axios,{ isAxiosError } from "axios";
+import axiosInstance from "../../utils/axiosInstance";
+import RapperList from "../RapperList"; // Uncomment if you use it (ensure RapperList.tsx exists and is typed)
+
+// Define the interface for the User object received from the API
+interface User {
+  id: number; // Assuming user_id from backend is mapped to 'id' in frontend
+  username: string;
+  email: string;
+  role: string;
+  // Add any other user properties returned by your /users/profile endpoint
+}
+
+// Define the UserProfile component as a Function Component (FC)
+const UserProfile: FC = () => {
+  // Explicitly type the state variables
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate(); // Initialize useNavigate hook
 
@@ -180,39 +321,53 @@ const UserProfile = () => {
         setLoading(false);
         return;
       }
-      try {
-        const response = await axiosInstance.get("/users/profile");
 
+      try {
+        const response = await axiosInstance.get<{ user: User }>("/users/profile"); // Explicitly type the response data
         setUser(response.data.user);
         setLoading(false);
-      } catch (err) {
-        console.error(
-          "Error fetching user profile:",
-          err.response?.data || err.message
-        );
-        if (
-          err.response &&
-          (err.response.status === 401 || err.response.status === 403)
-        ) {
-          setError(
-            "Your session has expired or is invalid. Please log in again."
-          );
-          localStorage.removeItem("token");
-          // Optionally redirect to login page here if you want an immediate redirect:
-          // navigate('/login');
-        } else {
-          setError(err.response?.data?.message || "Failed to fetch user data.");
-        }
+      } catch (err: unknown) { // Use 'unknown' for catch errors, then narrow down
+        console.error("Error fetching user profile:", err); // Log the raw error for better debugging
         setLoading(false);
+
+        let errorMessage = "Failed to fetch user data.";
+        if (isAxiosError(error)) { // Check if it's an AxiosError
+          if (error.response) {
+            // Server responded with a status other than 2xx range
+            console.error("Axios response error:", error.response.status, error.response.data);
+            if (error.response.status === 401 || error.response.status === 403) {
+              errorMessage = "Your session has expired or is invalid. Please log in again.";
+              localStorage.removeItem("token");
+            } else {
+              errorMessage = (error.response.data as { message?: string })?.message || errorMessage;
+            }
+          } else if (error.request) {
+            // Request was made but no response received (e.g., network error)
+            console.error("Axios request error:", error.request);
+            errorMessage = "Network error. Please check your internet connection.";
+          } else {
+            // Something else happened in setting up the request
+            console.error("Axios setup error:", error.message);
+            errorMessage = error.message;
+          }
+        } else if (err instanceof Error) { // Generic JavaScript error
+            errorMessage = err.message;
+        }
+
+        setError(errorMessage);
+        // Optionally redirect to login page here if you want an immediate redirect:
+        // navigate('/login'); // Uncomment if immediate redirect is desired
       }
     };
     fetchUserProfile();
-  }, []);
+  }, [navigate]); // Add navigate to dependencies, as it's used inside useEffect
 
+  // Render loading state
   if (loading) {
     return <p>Loading user profile...</p>;
   }
 
+  // Render error state
   if (error) {
     return (
       <div style={{ color: "red" }}>
@@ -227,6 +382,7 @@ const UserProfile = () => {
     );
   }
 
+  // Render message if no user data is found (after loading and no error)
   if (!user) {
     return (
       <div>
@@ -241,7 +397,7 @@ const UserProfile = () => {
     );
   }
 
-  // Rendering for a SINGLE user object
+  // Rendering for a SINGLE user object once loaded
   return (
     <div>
       <h3>Your Profile</h3>
@@ -257,13 +413,13 @@ const UserProfile = () => {
         </p>
       </div>
 
-      {/* The new button */}
+      {/* Button to navigate to the home route */}
       <button
-        onClick={() => navigate("/")} // Use navigate('/') to go to the home route
+        onClick={() => navigate("/")}
         style={{
-          marginTop: "20px", // Add some space above the button
+          marginTop: "20px",
           padding: "10px 20px",
-          backgroundColor: "#007bff", // Example styling
+          backgroundColor: "#007bff",
           color: "white",
           border: "none",
           borderRadius: "5px",
@@ -274,7 +430,8 @@ const UserProfile = () => {
         Go to Home
       </button>
 
-      <RapperList />
+      {/* RapperList component might be conditionally rendered based on context */}
+      {/* <RapperList /> */}
     </div>
   );
 };

@@ -1,7 +1,9 @@
 import React from "react";
 import { Provider } from "react-redux";
 import store from "./redux/store"; // Import your Redux store
+// import { Store } from "redux";
 import AuthForm from "./components/Signup/Signup"; // Import your authentication form
+// import 
 import "./App.css"; // Import your main CSS file
 import {
   BrowserRouter as Router,
@@ -12,10 +14,10 @@ import {
 import ClickableList from "./components/RapperList"; // Your dashboard component
 import HomePage from "./pages/HomePage"; // Placeholder for your home page
 import ProfilePage from "./pages/profile/ProfilePage"; // Assuming you have this page
-import UserProfile from "./components/userProfile/UserProfile";
+//import UserProfile from "./components/userProfile/UserProfile";
 
 import CreateArtistForm from "./components/CreateArtistForm/CreateArtistForm"; // Assuming you have this form
-import Dashboard from "./components/DashBoard/Dashboard";
+import Dashboard from "./components/Dashboard/Dashboard";
 
 function App() {
   return (

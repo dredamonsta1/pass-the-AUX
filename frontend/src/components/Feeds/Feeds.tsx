@@ -1,15 +1,53 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../utils/axiosInstance"; // Corrected path to axiosInstance
 
+// --- Interfaces ---
+interface Post {
+  id?: string;
+  _id?: string;
+  user_id: string;
+  content: string;
+  timestamp?: string | number;
+  // ...add other post fields if needed
+}
+
+interface Comment {
+  id?: string;
+  userId: string;
+  comment: string;
+  timestamp?: string | number;
+  // ...add other comment fields if needed
+}
+
+interface PostCreatorProps {
+  onAddPost: (postContent: string) => void;
+}
+
+interface PostItemProps {
+  post: Post;
+  currentUserId: string;
+  onAddComment: (postId: string, commentText: string) => void;
+}
+
+interface CommentCreatorProps {
+  postId: string;
+  onAddComment: (postId: string, commentText: string) => void;
+}
+
+interface CommentItemProps {
+  comment: Comment;
+  currentUserId: string;
+}
+
 // Feeds Component
 function Feeds() {
   // IMPORTANT: For `currentUserId` to accurately display "(You)",
   // your backend needs an endpoint (e.g., GET /api/me) that returns the authenticated user's ID.
   // Otherwise, `currentUserId` will remain 'anonymous-client-id' (or whatever default you set).
-  const [currentUserId, setCurrentUserId] = useState("anonymous-client-id");
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("anonymous-client-id");
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Function to fetch posts from the backend
   const fetchPosts = useCallback(async () => {
@@ -22,14 +60,14 @@ function Feeds() {
       // If it's { data: [...] }, use response.data.data.
       // If it's directly [...], use response.data.
       // If it's { posts: [...] }, use response.data.posts.
-      const fetchedPosts = Array.isArray(response.data)
+      const fetchedPosts: Post[] = Array.isArray(response.data)
         ? response.data
         : response.data.data || response.data.posts || []; // Added response.data.posts as another common pattern
 
       setPosts(fetchedPosts);
       console.log("Fetched and set posts:", fetchedPosts); // Log the actual posts array
-    } catch (err) {
-      console.error("Error fetching posts:", err.response?.data || err.message);
+    } catch (error: any) {
+      console.error("Error fetching posts:", error.response?.data || error.message);
       setError("Failed to load posts.");
     } finally {
       setLoading(false);
@@ -55,12 +93,12 @@ function Feeds() {
 
   // Function to add a new post
   const addPost = useCallback(
-    async (postContent) => {
+    async (postContent: string) => {
       try {
         await axiosInstance.post("/posts", { content: postContent });
         console.log("Post added successfully!");
         fetchPosts(); // Re-fetch all posts to show the new one
-      } catch (e) {
+      } catch (e: any) {
         console.error("Error adding post: ", e.response?.data || e.message);
         alert("Failed to add post. Please try again.");
       }
@@ -70,7 +108,7 @@ function Feeds() {
 
   // Function to add a new comment
   const addComment = useCallback(
-    async (postId, commentText) => {
+    async (postId: string, commentText: string) => {
       try {
         await axiosInstance.post("/comments", {
           postId: postId,
@@ -80,7 +118,7 @@ function Feeds() {
         console.log("Comment added successfully!");
         // Note: The PostItem component will re-fetch its comments after a short delay
         // to show the newly added comment.
-      } catch (e) {
+      } catch (e: any) {
         console.error("Error adding comment: ", e.response?.data || e.message);
         alert("Failed to add comment. Please try again.");
       }
@@ -151,10 +189,10 @@ function Feeds() {
 // --- Sub-components (remain the same as before) ---
 
 // PostCreator Component
-function PostCreator({ onAddPost }) {
-  const [postText, setPostText] = useState("");
+function PostCreator({ onAddPost }: PostCreatorProps) {
+  const [postText, setPostText] = useState<string>("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!postText.trim()) {
       alert("Please enter some text to post.");
@@ -167,20 +205,19 @@ function PostCreator({ onAddPost }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-50 p-4 rounded-lg shadow-inner mb-6"
+      className="feeds-submit-form-area"
     >
       <textarea
-        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 resize-y"
-        rows="3"
+        className="feeds-textarea"
         placeholder="What's on your mind?"
         value={postText}
         onChange={(e) => setPostText(e.target.value)}
       ></textarea>
 
-      <div className="flex justify-end">
+      <div className="submit-button-container">
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+          className="feeds-submit-button"
         >
           Post
         </button>
@@ -190,18 +227,18 @@ function PostCreator({ onAddPost }) {
 }
 
 // PostItem Component
-function PostItem({ post, currentUserId, onAddComment }) {
-  const [comments, setComments] = useState([]);
-  const [showComments, setShowComments] = useState(false);
-  const [commentsLoading, setCommentsLoading] = useState(false);
-  const [commentsError, setCommentsError] = useState(null);
+function PostItem({ post, currentUserId, onAddComment }: PostItemProps) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [showComments, setShowComments] = useState<boolean>(false);
+  const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
 
   // Function to format timestamp (assuming timestamp is a string or number now)
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = (timestamp?: string | number) => {
     if (!timestamp) return "Unknown time";
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      return timestamp;
+      return String(timestamp);
     }
     return date.toLocaleString();
   };
@@ -226,11 +263,11 @@ function PostItem({ post, currentUserId, onAddComment }) {
         `/comments?postId=${postIdToFetch}`
       );
       // Corrected: Safely access comments array from response
-      const fetchedComments = Array.isArray(response.data)
+      const fetchedComments: Comment[] = Array.isArray(response.data)
         ? response.data
         : response.data.data || [];
       setComments(fetchedComments);
-    } catch (err) {
+    } catch (err: any) {
       console.error(
         "Error fetching comments for post",
         post.id,
@@ -305,10 +342,10 @@ function PostItem({ post, currentUserId, onAddComment }) {
             </div>
           )}
           <CommentCreator
-            postId={post.id || post._id} // Pass the correct postId to CommentCreator
+            postId={post.id || post._id as string}
             onAddComment={(postId, commentText) => {
-              onAddComment(postId, commentText); // Call parent's addComment
-              setTimeout(fetchComments, 500); // Re-fetch comments after a short delay for backend processing
+              onAddComment(postId, commentText);
+              setTimeout(fetchComments, 500);
             }}
           />
         </div>
@@ -318,10 +355,10 @@ function PostItem({ post, currentUserId, onAddComment }) {
 }
 
 // CommentCreator Component
-function CommentCreator({ postId, onAddComment }) {
-  const [commentText, setCommentText] = useState("");
+function CommentCreator({ postId, onAddComment }: CommentCreatorProps) {
+  const [commentText, setCommentText] = useState<string>("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!commentText.trim()) {
       alert("Please enter a comment.");
@@ -337,8 +374,8 @@ function CommentCreator({ postId, onAddComment }) {
       className="mt-4 bg-gray-50 p-3 rounded-lg shadow-inner"
     >
       <textarea
-        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 text-sm resize-y"
-        rows="2"
+        className="comment-textarea"
+        
         placeholder="Add a comment..."
         value={commentText}
         onChange={(e) => setCommentText(e.target.value)}
@@ -356,12 +393,12 @@ function CommentCreator({ postId, onAddComment }) {
 }
 
 // CommentItem Component
-function CommentItem({ comment, currentUserId }) {
-  const formatTimestamp = (timestamp) => {
+function CommentItem({ comment, currentUserId }: CommentItemProps) {
+  const formatTimestamp = (timestamp?: string | number) => {
     if (!timestamp) return "Unknown time";
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      return timestamp;
+      return String(timestamp);
     }
     return date.toLocaleString();
   };

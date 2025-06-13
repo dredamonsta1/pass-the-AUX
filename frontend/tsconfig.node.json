@@ -1,3 +1,4 @@
+// frontend/tsconfig.node.json
 {
     "compilerOptions": {
         "composite": true,
@@ -7,12 +8,12 @@
         "strict": true,
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
-        "noEmit": true,
+        // Removed "noEmit": true, as it conflicts with "composite": true
         "types": [
             "node"
-        ]
+        ] // This specifies Node.js types
     },
     "include": [
         "vite.config.ts"
-    ]
+    ] // Or other Node.js specific files like setupTests.ts if applicable
 }

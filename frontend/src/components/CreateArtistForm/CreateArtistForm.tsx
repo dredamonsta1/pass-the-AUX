@@ -1,15 +1,30 @@
-// src/components/CreateRapperForm/CreateRapperForm.jsx (New file, or integrate into Dashboard if you have a form there)
-import React, { useState } from "react";
+// src/components/CreateRapperForm/CreateRapperForm.tsx (New file, or integrate into Dashboard if you have a form there)
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import axiosInstance from "../../utils/axiosInstance"; // Use axiosInstance for authenticated calls
 
-const CreateArtistForm = () => {
-  const [artistName, setArtistName] = useState("");
-  const [artistGenre, setArtistGenre] = useState("");
-  const [artistImage, setArtistImage] = useState(null); // State for the selected file
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+interface ArtistData {
+  artist_name: string;
+  genre: string;
+  count: number;
+  image_url: string | null;
+  aka: string;
+  state: string;
+  region: string;
+  label: string;
+  mixtape: string;
+  album: string;
+  year: number;
+  certifications: string;
+}
 
-  const handleSubmit = async (e) => {
+const CreateArtistForm: React.FC = () => {
+  const [artistName, setArtistName] = useState<string>("");
+  const [artistGenre, setArtistGenre] = useState<string>("");
+  const [artistImage, setArtistImage] = useState<File | null>(null); // State for the selected file
+  const [message, setMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
@@ -27,7 +42,7 @@ const CreateArtistForm = () => {
 
     try {
       // First, upload the image (if any) and get its URL
-      let imageUrl = null;
+      let imageUrl: string | null = null;
       if (artistImage) {
         const uploadResponse = await axiosInstance.post(
           "/upload-artist-image",
@@ -44,7 +59,7 @@ const CreateArtistForm = () => {
 
       // 2. Now, create the artist record in your database, potentially with the image URL
       // This assumes your /api POST endpoint for artists accepts an 'imageUrl' field
-      const artistData = {
+      const artistData: ArtistData = {
         artist_name: artistName,
         genre: artistGenre,
         count: 0,
@@ -75,8 +90,8 @@ const CreateArtistForm = () => {
       setArtistName("");
       setArtistGenre("");
       setArtistImage(null);
-      document.getElementById("artistImageInput").value = ""; // Clear file input
-    } catch (error) {
+      (document.getElementById("artistImageInput") as HTMLInputElement).value = ""; // Clear file input
+    } catch (error: any) {
       console.error(
         "Error creating artist or uploading image:",
         error.response?.data || error.message
@@ -128,7 +143,7 @@ const CreateArtistForm = () => {
         <input
           type="file"
           id="artistImageInput"
-          onChange={(e) => setArtistImage(e.target.files[0])} // Store the selected file object
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setArtistImage(e.target.files ? e.target.files[0] : null)} // Store the selected file object
           accept="image/*" // Restrict to image files
         />
       </div>

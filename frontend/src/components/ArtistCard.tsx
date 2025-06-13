@@ -1,9 +1,22 @@
-// src/components/ArtistCard.jsx
+// src/components/ArtistCard.tsx
 // This component displays an individual artist's details including the image.
 
 import React from "react";
 
-const ArtistCard = ({ artist }) => {
+// Define the Artist type
+interface Artist {
+  name: string;
+  genre: string;
+  image_url?: string;
+  count: number;
+  // Add other fields if needed
+}
+
+interface ArtistCardProps {
+  artist: Artist;
+}
+
+const ArtistCard: React.FC<ArtistCardProps> = ({ artist }) => {
   // Construct the full image URL.
   // IMPORTANT: Replace 'https://ninebyfourapi.herokuapp.com' with your actual API base URL.
   const fullImageUrl = artist.image_url
