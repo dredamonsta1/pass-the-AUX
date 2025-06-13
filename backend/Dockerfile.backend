@@ -19,4 +19,4 @@ EXPOSE 3010
 
 # Command to start your Node.js backend
 # The index.js file is now correctly located at /app/index.js
-CMD ["node", "index.js"]
+CMD ["node", "src/index.js"]
