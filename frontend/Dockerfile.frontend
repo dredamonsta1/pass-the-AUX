@@ -4,27 +4,32 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
+# Set NODE_ENV to development during build to ensure devDependencies are installed
+ENV NODE_ENV=development
+
 # Copy package.json and package-lock.json first to leverage Docker cache
 # This layer will only be rebuilt if package*.json changes
-COPY frontend/package*.json ./
+COPY package*.json ./  # This copies from the build context (which is your frontend folder)
 
 RUN npm install
 
-# Removed: RUN npm install -g typescript
-# TypeScript is installed as a devDependency via npm install
-
-# Copy the rest of your frontend application code
-COPY frontend/. .
+# Copy the rest of your frontend application code from the build context.
+# Ensure all source files and tsconfig.json are in the root of your frontend folder.
+COPY . .
 
 # Build the React app for production
+# This command must successfully create the build output directory (usually 'dist' for Vite) at /app/dist
 RUN npm run build
 
 # Stage 2: Serve the built React application with a lightweight web server (e.g., Nginx)
 FROM nginx:alpine
 
+# Optionally reset NODE_ENV to production for the final image, as it's for serving
+ENV NODE_ENV=production
+
 # Copy the built React app from the build stage into Nginx's static file directory
-# This path needs to be correct for your React build output
-COPY --from=build /app/build /usr/share/nginx/html
+# Vite typically outputs to 'dist', so we copy from /app/dist
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose the port Nginx will listen on
 EXPOSE 80
